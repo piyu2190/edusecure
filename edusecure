@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart School Security</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            margin-top: 20px;
+            color: #333;
+        }
+        .container {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        video {
+            width: 60%;
+            border: 3px solid #333;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        button {
+            display: block;
+            width: 200px;
+            margin: 10px;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>EduSecure</h1>
+    <div class="container">
+        <video id="camera" autoplay></video>
+        <canvas id="cameraCanvas" style="display: none;"></canvas>
+        <button id="scanFace">Scan Face</button>
+        <button id="Fingerprint">Fingerprint</button>
+        <button id="rfidCheck">Check RFID</button>
+        <p id="status">Status: Waiting for authentication...</p>
+    </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+    <script>
+        const video = document.getElementById('camera');
+        const canvas = document.getElementById('cameraCanvas');
+        const scanFaceButton = document.getElementById('scanFace');
+        const captureImageButton = document.getElementById('captureImage');
+        const rfidCheckButton = document.getElementById('rfidCheck');
+        const statusText = document.getElementById('status');
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Start video stream
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(error => {
+                console.error("Error accessing camera:", error);
+            });
+
+        // Capture image from camera
+        captureImageButton.addEventListener('click', () => {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            statusText.innerText = "Image Captured!";
+        });
+
+        // Simulated Face Recognition Process
+        scanFaceButton.addEventListener('click', () => {
+            statusText.innerText = "Scanning face...";
+            setTimeout(() => {
+                let isRecognized = Math.random() > 0.3; // Simulated recognition (70% success)
+                if (isRecognized) {
+                    statusText.innerText = "Access Granted!";
+                    database.ref('access_logs').push({
+                        name: "Recognized User",
+                        time: new Date().toLocaleString()
+                    });
+                } else {
+                    statusText.innerText = "Access Denied!";
+                }
+            }, 2000);
+        });
+
+        // Simulated RFID Check
+        rfidCheckButton.addEventListener('click', () => {
+            statusText.innerText = "Checking RFID...";
+            setTimeout(() => {
+                let isAuthorized = Math.random() > 0.2; // Simulated check (80% success)
+                if (isAuthorized) {
+                    statusText.innerText = "RFID Verified! Access Granted.";
+                    database.ref('rfid_logs').push({
+                        id: "12345ABC",
+                        time: new Date().toLocaleString()
+                    });
+                } else {
+                    statusText.innerText = "RFID Not Recognized!";
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
